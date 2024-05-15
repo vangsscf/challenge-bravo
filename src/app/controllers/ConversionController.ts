@@ -1,10 +1,29 @@
 import { Request, Response } from "express";
+import { Currency, currencyModel } from "../models/CurrencyModel";
+import BigNumber from "bignumber.js";
 
 class ConversionController {
+    public async conversion(req: Request, res: Response) {
+        let query: any = req.query;
 
-    public conversion(req: Request, res: Response) {
-        return res.json({
-            response: 'Hello World'
+        let fromCoin: Currency = await currencyModel.getCurrency(query.from);
+        if (!fromCoin)
+            return res.status(404).json({
+                response: `${query.from} not found`
+            });
+        let toCoin: Currency = await currencyModel.getCurrency(query.to);
+        if (!toCoin)
+            return res.status(404).json({
+                response: `${query.to} not found`
+            });
+        let amount = req.query.amount ? Number(req.query.amount) : 1;
+        let value = new BigNumber(fromCoin.usdValue).dividedBy(toCoin.usdValue).multipliedBy(amount).toFixed(15);
+
+        return res.status(200).json({
+            from: query.from,
+            amount,
+            to: query.to,
+            value
         });
     }
 }

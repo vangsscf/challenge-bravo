@@ -23,8 +23,7 @@ class CurrencyController {
             });
         }
 
-        await updateRates.startApiCron();
-        updateRates.startCron();
+        await updateRates.startCron();
     }
 
     public conversion(req: Request, res: Response) {

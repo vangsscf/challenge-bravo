@@ -4,11 +4,11 @@ import { validate } from 'express-validation';
 import Joi from 'joi';
 const router: Router = Router()
 const conversion = {
-    query: {
-      to: Joi.string().required(),
-      from: Joi.string().required(),
-      amount: Joi.number()
-    },
+    query: Joi.object({
+        to: Joi.string().required(),
+        from: Joi.string().required(),
+        amount: Joi.number()
+    }),
 }
 
 

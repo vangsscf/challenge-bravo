@@ -10,14 +10,9 @@ class UpdateRates {
         this.updateAll();
     }
 
-    public async startApiCron() {
-        cron.schedule('10 * * * *', this.getCoinAPI);
-        return this.getCoinAPI();
-    }
-
     private async updateAll() {
+        await this.getCoinAPI();
         let coins: Currency[] = await currencyModel.getCurrencies();
-        this.getCoinAPI();
         for (let i = 0; i < coins.length; i++) {
             if (coins[i].symbol !== 'USD')
                 coins[i].usdValue = await this.getTax(coins[i]);

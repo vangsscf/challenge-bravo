@@ -23,15 +23,45 @@ class CurrencyController {
             });
         }
 
-        await updateRates.startCron();
+        return await updateRates.startCron();
     }
 
-    public conversion(req: Request, res: Response) {
-        return res.json({
-            response: 'Hello World'
+    public async add(req: Request, res: Response) {
+        let body = req.body;
+        let coins: Currency[] = await currencyModel.getCurrencies();
+        let idx = coins.findIndex((i)=> i.symbol == req.body.asset);
+        if (idx >= 0)
+            return res.status(404).json({
+                response: `${req.body.asset} already exists!`
+            });
+        let coin: Currency = {
+            symbol: body.symbol,
+            type: body.type,
+            usdValue: body.amount
+        }
+        coin.usdValue = await updateRates.getTax(coin);
+        await currencyModel.addCurrency(coin.symbol, coin);
+        return res.status(200).json({
+            message: `Asset ${coin.symbol} added with success!`
         });
     }
 
+    public async remove(req: Request, res: Response) {
+        let coins: Currency[] = await currencyModel.getCurrencies();
+        let idx = coins.findIndex((i)=> i.symbol == req.params.asset);
+        if (idx < 0)
+            return res.status(404).json({
+                response: `${req.params.asset} not found`
+            });
+        if (coins[idx].type == 'main')
+            return res.status(400).json({
+                response: `Main coin ${req.params.asset} can't be removed`
+            });
+        await currencyModel.deleteCurrency(req.params.asset);
+        return res.status(200).json({
+            message: `Asset ${req.params.asset} removed with success!`
+        });
+    }
 
 }
 

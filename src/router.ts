@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { conversionController } from "./app/controllers/ConversionController";
-import { validate } from 'express-validation';
+import { currencyController } from "./app/controllers/CurrencyController";
 import Joi from 'joi';
+import { validate } from 'express-validation';
+
 const router: Router = Router()
 const conversion = {
     query: Joi.object({
@@ -11,9 +13,19 @@ const conversion = {
     }),
 }
 
+const add = {
+    body: Joi.object({
+        asset: Joi.string().required(),
+        type: Joi.string().required().valid('float', 'crypto', 'fixed', 'scrapper'),
+        rate: Joi.number(),
+        rateAsset: Joi.string()
+    }),
+}
 
 //Routes
 router.get("/conversion", validate(conversion), conversionController.conversion);
+router.get("/add", validate(add), currencyController.add);
+router.get("/remove/:asset", currencyController.remove);
 
 
 

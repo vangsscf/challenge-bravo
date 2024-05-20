@@ -37,7 +37,12 @@ class CurrencyController {
         let coin: Currency = {
             ...body
         }
-        coin.rate = await updateRates.getTax(coin);
+        try {
+            coin.rate = await updateRates.getTax(coin);
+        } catch(err: any) {
+            return res.status(400).json(err?.message);
+        }
+        
         await currencyModel.addCurrency(coin.symbol, coin);
         return res.status(200).json({
             message: `Asset ${coin.symbol} added with success!`

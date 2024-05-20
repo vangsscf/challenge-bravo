@@ -6,6 +6,7 @@ import * as cheerio from 'cheerio';
 
 class UpdateRates {
     private allUsdQuoteRate: any[] = [];
+    private allMCQuoteMap: any[] = [];
     public async startCron() {
         cron.schedule('* * * * *', this.updateAll);
         this.updateAll();
@@ -30,25 +31,47 @@ class UpdateRates {
             //     if (item.asset_id_quote == 'BRL')
             //         console.log(item);
             // })
-            return true;
         } catch (err) {
             console.log(err);
             throw err;
         }
 
+        try {
+            let resp: any = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/map', { headers: { 'X-CMC_PRO_API_KEY': process.env.MCAPIKEY } });
+            if (resp.data?.data) {
+                this.allMCQuoteMap = resp.data?.data;
+            }
+        } catch (err: any) {
+            console.log(err.response.data)
+        }
+        return true;
+    }
+
+    private async getCoinMCPI(id: string) {
+        try {
+            let resp: any = await axios.get(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?id=${id}`, { headers: { 'X-CMC_PRO_API_KEY': process.env.MCAPIKEY } });
+            if (resp.data?.data && resp.data?.data[id] && resp.data?.data[id].quote && resp.data?.data[id].quote['USD']) {
+                return resp.data?.data[id].quote['USD'].price;
+            } else return null;
+        } catch (err: any) {
+            console.log(err?.response?.data);
+            throw new Error('get Cotation Error');
+        }
     }
 
     public async getTax(coin: Currency) {
-        if (coin.type == CurrencyType.main || coin.type == CurrencyType.crypto || coin.type == CurrencyType.float || coin.type == CurrencyType.fixed) {
-            let taxObj = this.allUsdQuoteRate.find((c) => c.asset_id_quote == coin.symbol);
-            console.log(coin.symbol, taxObj);
-            if (!taxObj?.rate) {
-                if (coin.type == CurrencyType.fixed)
-                    return coin.rate;
-                else throw new Error('Invalid currency or type');
-            }
+        let taxObj = this.allUsdQuoteRate.find((c) => c.asset_id_quote == coin.symbol);
+        if (taxObj?.rate)
             return new BigNumber(1).dividedBy(taxObj.rate).toFixed(30);
-        } else if (coin.type == 'scrapper') {
+        taxObj = this.allMCQuoteMap.find((d) => d.symbol == coin.symbol);
+        if (taxObj?.id) {
+            let price = await this.getCoinMCPI(taxObj?.id)
+            if (price)
+                return new BigNumber(price).toFixed(30);
+        }
+        if (coin.type == CurrencyType.fixed)
+            return coin.rate;
+        else if (coin.type == CurrencyType.scrapper) {
             let rateAssetUsdRate = 1, rate = '1', amount = '1';
             if (coin.scrpprRateAsset) {
                 try {
@@ -58,7 +81,7 @@ class UpdateRates {
                     throw new Error('Invalid rate currency');
                 }
             }
-            if (coin.scrpprUrl)
+            if (coin.scrpprUrl?.trim())
                 try {
                     let resp = await axios.get(coin.scrpprUrl);
                     if (resp.data && coin.scrpprRateTag) {
@@ -75,16 +98,17 @@ class UpdateRates {
                                 amount = this.formatTextToNumber(textB, coin.scrpprDecimalSymbol || ',');
                             } else throw new Error('Invalid scrapper amount tag');
                         }
-
-                        return new BigNumber(rate).dividedBy(amount).dividedBy(rateAssetUsdRate).toFixed(30);
-                    }
+                        return new BigNumber(rate).dividedBy(amount).multipliedBy(rateAssetUsdRate).toFixed(30);
+                    } else throw new Error('Scrapper invalid');
 
                 } catch (err) {
-                    throw err;
+                    throw new Error('Scrapper Error');
                 }
             else throw new Error('Scrapper url need to be informed');
         }
-        throw new Error('Invalid currency or type');
+        else throw new Error('Invalid currency or type');
+
+
     }
 
     private formatTextToNumber(numberStr: string, decimalSymbol: string) {

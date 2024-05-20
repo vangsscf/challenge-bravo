@@ -17,7 +17,7 @@ class ConversionController {
                 response: `${query.to} not found`
             });
         let amount = req.query.amount ? Number(req.query.amount) : 1;
-        let value = new BigNumber(fromCoin.rate).dividedBy(toCoin.rate).multipliedBy(amount).toFixed(query.decimalPlaces || 8);
+        let value = new BigNumber(fromCoin.rate).dividedBy(toCoin.rate).multipliedBy(amount).toFixed(Number(query.decimalPlaces) || 8);
 
         return res.status(200).json({
             from: query.from,

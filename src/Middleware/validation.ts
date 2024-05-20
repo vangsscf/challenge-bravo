@@ -6,20 +6,20 @@ export const conversion = {
         to: Joi.string().required(),
         from: Joi.string().required(),
         amount: Joi.number(),
-        decimalPlaces: Joi.number()
+        decimalPlaces: Joi.number().integer().max(30),
     }),
 }
 
 export const add = {
     body: Joi.object({
-        asset: Joi.string().required(),
-        type: Joi.string().required().valid(CurrencyType.crypto, CurrencyType.fixed, CurrencyType.scrapper, CurrencyType.float),
+        symbol: Joi.string().required().alphanum().max(15),
+        type: Joi.string().required().valid(CurrencyType.crypto, CurrencyType.fixed, CurrencyType.scrapper, CurrencyType.fiat),
         rate: Joi.number(),
-        rateAsset: Joi.string(),
+        scrpprRateAsset: Joi.string(),
         scrpprUrl: Joi.string(),
         scrpprAmountTag: Joi.string(),
         scrpprRateTag: Joi.string(),
-        scrpprDecimalSymbol: Joi.string()
+        scrpprDecimalSymbol: Joi.string().valid(',', '.')
     }),
 }
 

@@ -15,7 +15,7 @@ export type Currency = {
 export enum CurrencyType {
     main = 'main',
     scrapper = 'scrapper',
-    float = 'float',
+    fiat = 'fiat',
     crypto = 'crypto',
     fixed = 'fixed'
 }
@@ -23,8 +23,9 @@ export enum CurrencyType {
 class CurrencyModel {
 
     async addCurrency(coin: string, body: Currency) {
-        const client = await createClient()
-            .on('error', err => console.log('Redis Client Error', err))
+        const client = await createClient({
+            url: process.env.REDIS
+        }).on('error', err => console.log('Redis Client Error', err))
             .connect();
         await client.hSet(key, coin, JSON.stringify(body));
         await client.disconnect();
@@ -32,8 +33,9 @@ class CurrencyModel {
     }
 
     async addCurrencies(coins: Currency[]) {
-        const client = await createClient()
-            .on('error', err => console.log('Redis Client Error', err))
+        const client = await createClient({
+            url: process.env.REDIS
+        }).on('error', err => console.log('Redis Client Error', err))
             .connect();
         for (let i = 0; i < coins.length; i++) {
             await client.hSet(key, coins[i].symbol, JSON.stringify(coins[i]));
@@ -43,8 +45,9 @@ class CurrencyModel {
     }
 
     async deleteCurrency(coin: string) {
-        const client = await createClient()
-            .on('error', err => console.log('Redis Client Error', err))
+        const client = await createClient({
+            url: process.env.REDIS
+        }).on('error', err => console.log('Redis Client Error', err))
             .connect();
         await client.hDel(key, coin);
         await client.disconnect();
@@ -52,8 +55,9 @@ class CurrencyModel {
     }
 
     async getCurrencies() {
-        const client = await createClient()
-            .on('error', err => console.log('Redis Client Error', err))
+        const client = await createClient({
+            url: process.env.REDIS
+        }).on('error', err => console.log('Redis Client Error', err))
             .connect();
         const value = await client.hVals(key);
         await client.disconnect();
@@ -63,10 +67,11 @@ class CurrencyModel {
     }
 
     async getCurrency(coin: string) {
-        const client = await createClient()
-            .on('error', err => console.log('Redis Client Error', err))
+        const client = await createClient({
+            url: process.env.REDIS
+        }).on('error', err => console.log('Redis Client Error', err))
             .connect();
-        const value = await client.get(coin);
+        const value = await client.hGet(key, coin);
         await client.disconnect();
         return value ? JSON.parse(value) : null;
     }

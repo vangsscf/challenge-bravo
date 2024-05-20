@@ -1,7 +1,7 @@
 import { App } from "./app"
 import { currencyController } from "./app/controllers/CurrencyController";
 import 'dotenv/config';
-// import axios from "axios";
+import axios from "axios";
 // import * as cheerio from 'cheerio';
 
 new App().server.listen(process.env.PORT);
@@ -9,19 +9,24 @@ currencyController.init();
 // test();
 
 // async function test() {
-//     let resp: any = await axios.get('https://store.playstation.com/pt-br/product/UP1004-CUSA00419_00-GTAVCASHPACK000D');
-//     if (resp.data) {
-//         const $ = cheerio.load(resp.data);
-//         let textArr = $('.psw-t-title-m').text().split(' ');
-//         let textA = textArr.find((item) => item.indexOf('$') >= 0);
-//         console.log($('.psw-c-t-2').text())
-//         let textArrB = $('.psw-c-t-2').text().split(' ');
-//         let textB = textArrB.find((item) => item.indexOf('$') >= 0);
-//         if (textA && textB) {
-//             console.log(formatTextToNumber(textA, ','));
-//             console.log(formatTextToNumber(textB, ','));
+//     try {
+//         let resp: any = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/map', { headers: { 'X-CMC_PRO_API_KEY': process.env.MCAPIKEY } });
+//         if (resp.data) {
+//             console.log(resp.data);
+//             resp.data.data.forEach((a: any) => {
+//                 if (a.symbol == 'GTA') {
+//                     console.log(a);
+//                 }
+//             })
+
 //         }
 
+//         let resp2: any = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?id=29533', { headers: { 'X-CMC_PRO_API_KEY': process.env.MCAPIKEY } });
+//         if (resp2.data) {
+//             console.log(resp2.data);
+//         }
+//     } catch (err: any) {
+//         console.log(err.response.data)
 //     }
 // }
 

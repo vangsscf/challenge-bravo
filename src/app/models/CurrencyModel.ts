@@ -3,14 +3,22 @@ const key = 'coins';
 
 export type Currency = {
     symbol: string;
-    type: string;
-    usdValue: string;
+    type: CurrencyType;
+    rate: string;
     scrpprUrl?: string;
     scrpprAmountTag?: string;
     scrpprRateTag?: string;
     scrpprRateAsset?: string;
     scrpprDecimalSymbol?: string;
 };
+
+export enum CurrencyType {
+    main = 'main',
+    scrapper = 'scrapper',
+    float = 'float',
+    crypto = 'crypto',
+    fixed = 'fixed'
+}
 
 class CurrencyModel {
 

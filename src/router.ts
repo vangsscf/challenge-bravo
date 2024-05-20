@@ -1,37 +1,21 @@
 import { Router } from "express";
 import { conversionController } from "./app/controllers/ConversionController";
 import { currencyController } from "./app/controllers/CurrencyController";
-import Joi from 'joi';
 import { validate } from 'express-validation';
-
+import { authController } from "./app/controllers/AuthController";
+import { checkAuth } from "./Middleware/auth";
+import { conversion, add, login } from "./Middleware/validation";
 const router: Router = Router()
-const conversion = {
-    query: Joi.object({
-        to: Joi.string().required(),
-        from: Joi.string().required(),
-        amount: Joi.number(),
-        decimalPlaces: Joi.number()
-    }),
-}
 
-const add = {
-    body: Joi.object({
-        asset: Joi.string().required(),
-        type: Joi.string().required().valid('float', 'crypto', 'fixed', 'scrapper'),
-        rate: Joi.number(),
-        rateAsset: Joi.string(),
-        scrpprUrl: Joi.string(),
-        scrpprAmountTag: Joi.string(),
-        scrpprRateTag: Joi.string(),
-        scrpprDecimalSymbol: Joi.string()
-    }),
-}
 
 //Routes
 router.get("/conversion", validate(conversion), conversionController.conversion);
-router.get("/add", validate(add), currencyController.add);
-router.get("/remove/:asset", currencyController.remove);
+
+router.post("/add", validate(add), checkAuth, currencyController.add);
+router.delete("/remove/:asset", checkAuth, currencyController.remove);
 
 
+router.post("/login", validate(login), authController.login);
+router.get("/refresh", checkAuth, authController.refresh);
 
 export { router };

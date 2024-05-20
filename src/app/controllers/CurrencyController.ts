@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Currency, currencyModel } from "../models/CurrencyModel";
+import { Currency, currencyModel, CurrencyType } from "../models/CurrencyModel";
 import { updateRates } from "../services/updateRates";
 
 class CurrencyController {
@@ -15,8 +15,8 @@ class CurrencyController {
                 if (idx === -1) {
                     let body: Currency = {
                         symbol: coin,
-                        type: 'main',
-                        usdValue: '1'
+                        type: CurrencyType.main,
+                        rate: '1'
                     }
                     await currencyModel.addCurrency(coin, body);
                 }
@@ -29,17 +29,15 @@ class CurrencyController {
     public async add(req: Request, res: Response) {
         let body = req.body;
         let coins: Currency[] = await currencyModel.getCurrencies();
-        let idx = coins.findIndex((i)=> i.symbol == req.body.asset);
-        if (idx >= 0)
+        let idx = coins.findIndex((i) => i.symbol == req.body.asset);
+        if (idx >= 0 && coins[idx].type == 'main')
             return res.status(404).json({
-                response: `${req.body.asset} already exists!`
+                response: `${req.body.asset} can't be altered!`
             });
         let coin: Currency = {
-            symbol: body.symbol,
-            type: body.type,
-            usdValue: body.amount
+            ...body
         }
-        coin.usdValue = await updateRates.getTax(coin);
+        coin.rate = await updateRates.getTax(coin);
         await currencyModel.addCurrency(coin.symbol, coin);
         return res.status(200).json({
             message: `Asset ${coin.symbol} added with success!`
@@ -48,7 +46,7 @@ class CurrencyController {
 
     public async remove(req: Request, res: Response) {
         let coins: Currency[] = await currencyModel.getCurrencies();
-        let idx = coins.findIndex((i)=> i.symbol == req.params.asset);
+        let idx = coins.findIndex((i) => i.symbol == req.params.asset);
         if (idx < 0)
             return res.status(404).json({
                 response: `${req.params.asset} not found`

@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { Currency, currencyModel } from "../models/CurrencyModel";
+import { Currency, currencyModel, CurrencyType } from "../models/CurrencyModel";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import * as cheerio from 'cheerio';
@@ -16,7 +16,7 @@ class UpdateRates {
         let coins: Currency[] = await currencyModel.getCurrencies();
         for (let i = 0; i < coins.length; i++) {
             if (coins[i].symbol !== 'USD')
-                coins[i].usdValue = await this.getTax(coins[i]);
+                coins[i].rate = await this.getTax(coins[i]);
         }
         currencyModel.addCurrencies(coins);
     }
@@ -39,12 +39,12 @@ class UpdateRates {
     }
 
     public async getTax(coin: Currency) {
-        if (coin.type == 'main' || coin.type == 'crypto' || coin.type == 'float' || coin.type == 'fixed') {
+        if (coin.type == CurrencyType.main || coin.type == CurrencyType.crypto || coin.type == CurrencyType.float || coin.type == CurrencyType.fixed) {
             let taxObj = this.allUsdQuoteRate.find((c) => c.asset_id_quote == coin.symbol);
             console.log(coin.symbol, taxObj);
             if (!taxObj?.rate) {
-                if (coin.type == 'fixed')
-                    return coin.usdValue;
+                if (coin.type == CurrencyType.fixed)
+                    return coin.rate;
                 else throw new Error('Invalid currency or type');
             }
             return new BigNumber(1).dividedBy(taxObj.rate).toFixed(30);
@@ -52,7 +52,7 @@ class UpdateRates {
             let rateAssetUsdRate = 1, rate = '1', amount = '1';
             if (coin.scrpprRateAsset) {
                 try {
-                    rateAssetUsdRate = (await currencyModel.getCurrency(coin.scrpprRateAsset)).usdValue;
+                    rateAssetUsdRate = (await currencyModel.getCurrency(coin.scrpprRateAsset)).rate;
                 } catch (err) {
                     console.log(err);
                     throw new Error('Invalid rate currency');

@@ -9,7 +9,8 @@ const conversion = {
     query: Joi.object({
         to: Joi.string().required(),
         from: Joi.string().required(),
-        amount: Joi.number()
+        amount: Joi.number(),
+        decimalPlaces: Joi.number()
     }),
 }
 
@@ -18,7 +19,11 @@ const add = {
         asset: Joi.string().required(),
         type: Joi.string().required().valid('float', 'crypto', 'fixed', 'scrapper'),
         rate: Joi.number(),
-        rateAsset: Joi.string()
+        rateAsset: Joi.string(),
+        scrpprUrl: Joi.string(),
+        scrpprAmountTag: Joi.string(),
+        scrpprRateTag: Joi.string(),
+        scrpprDecimalSymbol: Joi.string()
     }),
 }
 

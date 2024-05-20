@@ -4,8 +4,12 @@ const key = 'coins';
 export type Currency = {
     symbol: string;
     type: string;
-    url?: string;
     usdValue: string;
+    scrpprUrl?: string;
+    scrpprAmountTag?: string;
+    scrpprRateTag?: string;
+    scrpprRateAsset?: string;
+    scrpprDecimalSymbol?: string;
 };
 
 class CurrencyModel {

@@ -2,6 +2,7 @@ import * as cron from 'node-cron';
 import { Currency, currencyModel } from "../models/CurrencyModel";
 import axios from "axios";
 import BigNumber from "bignumber.js";
+import * as cheerio from 'cheerio';
 
 class UpdateRates {
     private allUsdQuoteRate: any[] = [];
@@ -38,14 +39,59 @@ class UpdateRates {
     }
 
     public async getTax(coin: Currency) {
-        if (coin.type == 'main' || coin.type == 'crypto' || coin.type == 'float') {
+        if (coin.type == 'main' || coin.type == 'crypto' || coin.type == 'float' || coin.type == 'fixed') {
             let taxObj = this.allUsdQuoteRate.find((c) => c.asset_id_quote == coin.symbol);
             console.log(coin.symbol, taxObj);
-            if (!taxObj?.rate)
-                throw new Error('Invalid currency or type');
-            return new BigNumber(1).dividedBy(taxObj.rate).toFixed(15);
+            if (!taxObj?.rate) {
+                if (coin.type == 'fixed')
+                    return coin.usdValue;
+                else throw new Error('Invalid currency or type');
+            }
+            return new BigNumber(1).dividedBy(taxObj.rate).toFixed(30);
+        } else if (coin.type == 'scrapper') {
+            let rateAssetUsdRate = 1, rate = '1', amount = '1';
+            if (coin.scrpprRateAsset) {
+                try {
+                    rateAssetUsdRate = (await currencyModel.getCurrency(coin.scrpprRateAsset)).usdValue;
+                } catch (err) {
+                    console.log(err);
+                    throw new Error('Invalid rate currency');
+                }
+            }
+            if (coin.scrpprUrl)
+                try {
+                    let resp = await axios.get(coin.scrpprUrl);
+                    if (resp.data && coin.scrpprRateTag) {
+                        const $ = cheerio.load(resp.data);
+                        let textArr = $(coin.scrpprRateTag).text().split(' ');
+                        let textA = textArr.find((item) => item.indexOf('$') >= 0);
+                        if (textA)
+                            rate = this.formatTextToNumber(textA, coin.scrpprDecimalSymbol || ',');
+                        else throw new Error('Invalid scrapper rate tag');
+                        if (coin.scrpprAmountTag) {
+                            let textArrB = $(coin.scrpprAmountTag).text().split(' ');
+                            let textB = textArrB.find((item) => item.indexOf('$') >= 0);
+                            if (textB) {
+                                amount = this.formatTextToNumber(textB, coin.scrpprDecimalSymbol || ',');
+                            } else throw new Error('Invalid scrapper amount tag');
+                        }
+
+                        return new BigNumber(rate).dividedBy(amount).dividedBy(rateAssetUsdRate).toFixed(30);
+                    }
+
+                } catch (err) {
+                    throw err;
+                }
+            else throw new Error('Scrapper url need to be informed');
         }
         throw new Error('Invalid currency or type');
+    }
+
+    private formatTextToNumber(numberStr: string, decimalSymbol: string) {
+        if (decimalSymbol == ',') {
+            return numberStr.replace(/[^\d,]|\.(?=.*\.)/g, '').replace(',', '.');
+        } else
+            return numberStr.replace(/[^\d.]|\.(?=.*\.)/g, '');
     }
 
 

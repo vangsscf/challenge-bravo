@@ -52,7 +52,7 @@ If you wish you can change the default list as well using the `.env` file. The d
 
 ## Authentication 
 
-This token returned by this endpoint is required to add and remove coins from the system. This version of this project has only one admin user configurable in the `.env`. The token has expiration time of 2 hours.
+The token returned by this endpoint is required to add and remove coins from the system. This project version has only one admin user configurable in the `.env`. The token has expiration time of 2 hours.
 
 ### Request
 
@@ -167,7 +167,7 @@ This endpoint add new currencies in this platform. Needs authentication
 
 ## Remove Currency
 
-This endpoint remove currencies from this application. Needs authentication. Default coins can't be removed.
+This endpoint removes currencies from this application. Needs authentication. Default coins can't be removed.
 
 ### Request
 

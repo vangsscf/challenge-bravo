@@ -80,7 +80,7 @@ O token retornado neste endpoint é necessário para adicionar e remover outras 
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRldGltZSI6MTcxNjIw....."
     }
 
-## Refresh Token
+## Atualizar Token
 
 ### Request
 
@@ -103,7 +103,7 @@ O token retornado neste endpoint é necessário para adicionar e remover outras 
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRldGltZSI6MTcxNjIw....."
     }
 
-## Add Currency
+## Adicionar Moeda
 
 Este endpoint adiciona novas moedas à aplicação. É necessário autenticação
 
@@ -132,7 +132,7 @@ Este endpoint adiciona novas moedas à aplicação. É necessário autenticaçã
     | `scrpprDecimalSymbol` | Símbolo da casa decimal. Padrão é uma vírgula(,)          | No          | string |
 
 ### CurrencyTypes Enum
-| Enum       | Description                     |
+| Enum       | Descrição                       |
 | ---------- | ------------------------------- |
 | `fiat`     | Moeda Física                    |
 | `Crypto`   | Moeda Cripto                    |
@@ -165,7 +165,7 @@ Este endpoint adiciona novas moedas à aplicação. É necessário autenticaçã
     }
 
 
-## Remove Currency
+## Remover Moeda
 
 Este endpoint remove moedas da aplicação. É necessário autenticação. Moedas padrão não podem ser removidas. 
 

@@ -4,7 +4,6 @@ import { createToken } from "../../Middleware/auth";
 class AuthController {
     public async login(req: Request, res: Response) {
         let body: any = req.body;
-        console.log(req.body)
         if (body.login == process.env.LOGIN && body.password == process.env.PASS) {
             let token = createToken();
             res.status(200).json({ token })
